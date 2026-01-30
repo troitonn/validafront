@@ -9,7 +9,12 @@ const Dashboard = () => {
   const [msg, setMsg] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const urlBI = "https://app.powerbi.com/reportEmbed?reportId=44029358-a74c-43ff-b041-0a01877077e3&autoAuth=true&ctid=7b8228c2-911b-4b3d-bca2-bb42add6ec41";
+  /**
+   * AJUSTE NA URL: 
+   * Certifique-se de que a URL termina com "&navContentPaneEnabled=true" 
+   * e NÃO contém "&filterPaneEnabled=false" se quiser ver todas as opções nativas.
+   */
+  const urlBI = "https://app.powerbi.com/reportEmbed?reportId=44029358-a74c-43ff-b041-0a01877077e3&autoAuth=true&ctid=7b8228c2-911b-4b3d-bca2-bb42add6ec41&navContentPaneEnabled=true";
 
   const aplicarFiltro = async () => {
     setLoading(true);
@@ -57,7 +62,6 @@ const Dashboard = () => {
       }}>
         <h2 style={{ fontSize: "1.2rem", color: "#58a6ff", margin: "0 0 25px 0", fontWeight: "600" }}>Filtros do BI</h2>
 
-        {/* ÁREA DOS INPUTS */}
         <div style={{ display: "flex", flexDirection: "column", gap: "15px", flex: 1 }}>
           <div style={{ width: "100%" }}>
             <label style={{ fontSize: "11px", color: "#8b949e", display: "block", marginBottom: "6px" }}>CNPJ / CPF</label>
@@ -93,7 +97,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* RODAPÉ COM BOTÕES */}
         <div style={{ 
           paddingTop: "20px", 
           borderTop: "1px solid #30363d", 
@@ -139,25 +142,24 @@ const Dashboard = () => {
         </div>
       </aside>
 
-      {/* ÁREA DO RELATÓRIO - Ajustada para não sobrepor as abas nativas */}
+      {/* ÁREA DO RELATÓRIO */}
       <main style={{ 
         flex: 1, 
         height: "100%", 
-        backgroundColor: "#0d1117", 
-        padding: "10px 10px 35px 10px", // Padding inferior maior (35px) para dar espaço às abas do BI
+        backgroundColor: "#f0f2f5", // Fundo levemente cinza para destacar a barra branca do BI
+        padding: "0", 
         boxSizing: "border-box",
-        display: "flex"
+        display: "flex",
+        flexDirection: "column"
       }}>
         <iframe
           key={refreshKey}
-          title="Mercado Abilhão"
+          title="Relatório Única"
           src={urlBI}
           style={{ 
             width: "100%", 
             height: "100%", 
             border: "none",
-            borderRadius: "4px",
-            backgroundColor: "#fff" // Fundo branco evita "flicker" visual
           }}
           allowFullScreen={true}
         ></iframe>
