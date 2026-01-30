@@ -10,28 +10,10 @@ const Dashboard = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [progress, setProgress] = useState(0);
 
-  // URL ATUALIZADA: Mercado Abilhão
+  // URLs configuradas
   const urlBI = "https://app.powerbi.com/view?r=eyJrIjoiMGZhOGJiZGEtOGEyZi00ZDBjLWI5YmQtOTA4OGE5Y2QxNDgwIiwidCI6IjdiODIyOGMyLTkxMWItNGIzZC1iY2EyLWJiNDJhZGQ2ZWM0MSJ9&pageName=0dcf58f005625d83d821";
-  
   const urlAutomate = "https://default7b8228c2911b4b3dbca2bb42add6ec.41.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/2f97c85812e84355ae60b53d73ad420d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=SMOi--lPXC-jaAlz8m70s3iTgtHn4Bq01xwg-ihBb_s";
-
-  const startProgress = () => {
-    setProgress(0);
-    const totalTime = 120000; // 2 minutos exatos
-    const intervalTime = 1000; 
-    const increment = 100 / (totalTime / intervalTime);
-
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 99) {
-          clearInterval(interval);
-          return 99;
-        }
-        return prev + increment;
-      });
-    }, intervalTime);
-    return interval;
-  };
+  const urlProxyStatus = "https://valida-proxy.onrender.com/status-atualizacao";
 
   const aplicarFiltro = async () => {
     setLoading(true);
@@ -58,32 +40,55 @@ const Dashboard = () => {
 
   const atualizarEPowerAutomate = async () => {
     setLoading(true);
-    setMsg("⏳ Sincronizando dados (Aprox. 2 min)...");
-    const progressInterval = startProgress();
+    setMsg("⏳ Iniciando sincronização real...");
+    setProgress(10); // Início visual
 
     try {
-      await fetch(urlAutomate, {
-        method: "POST",
+      // 1. Dispara o Power Automate (POST)
+      await fetch(urlAutomate, { 
+        method: "POST", 
         mode: 'no-cors',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({})
       });
+      
+      setMsg("⏳ Aguardando Power BI processar dados...");
 
-      // Aguarda os 2 minutos (120000ms)
-      setTimeout(() => {
-        clearInterval(progressInterval);
-        setProgress(100);
-        setRefreshKey(prev => prev + 1);
-        setMsg("✅ Dados sincronizados!");
-        setLoading(false);
-        setTimeout(() => setProgress(0), 3000);
-      }, 120000);
+      // 2. Inicia o monitoramento real (Polling)
+      const checkStatus = setInterval(async () => {
+        try {
+          const res = await fetch(urlProxyStatus);
+          const data = await res.json();
+
+          // Se completou, finaliza
+          if (data.status === "Completed") {
+            clearInterval(checkStatus);
+            setProgress(100);
+            setRefreshKey(prev => prev + 1);
+            setMsg("✅ Sincronizado com sucesso!");
+            setLoading(false);
+            setTimeout(() => setProgress(0), 3000);
+          } 
+          // Se falhou no Power BI
+          else if (data.status === "Failed") {
+            clearInterval(checkStatus);
+            setMsg("⚠️ O Power BI relatou erro na carga.");
+            setLoading(false);
+            setProgress(0);
+          } 
+          // Se ainda está processando, aumenta a barra gradualmente
+          else {
+            setProgress(prev => (prev < 92 ? prev + 3 : prev));
+          }
+        } catch (e) {
+          console.error("Erro ao verificar status no Proxy.");
+        }
+      }, 10000); // Verifica a cada 10 segundos
 
     } catch (err) {
-      setMsg("⚠️ Erro na sincronização");
-      clearInterval(progressInterval);
+      setMsg("⚠️ Falha ao conectar com o serviço.");
       setLoading(false);
-      setRefreshKey(prev => prev + 1);
+      setProgress(0);
     }
   };
 
@@ -133,32 +138,21 @@ const Dashboard = () => {
           <div style={{ display: "flex", gap: "10px" }}>
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: "10px", color: "#8b949e", display: "block", marginBottom: "6px" }}>Data Inicial</label>
-              <input 
-                style={inputStyle} 
-                type="date" 
-                value={dtInicial} 
-                onChange={(e) => setDtInicial(e.target.value)}
-                onClick={(e) => (e.target as any).showPicker?.()} 
-              />
+              <input style={inputStyle} type="date" value={dtInicial} onChange={(e) => setDtInicial(e.target.value)} onClick={(e) => (e.target as any).showPicker?.()} />
             </div>
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: "10px", color: "#8b949e", display: "block", marginBottom: "6px" }}>Data Final</label>
-              <input 
-                style={inputStyle} 
-                type="date" 
-                value={dtFinal} 
-                onChange={(e) => setDtFinal(e.target.value)}
-                onClick={(e) => (e.target as any).showPicker?.()} 
-              />
+              <input style={inputStyle} type="date" value={dtFinal} onChange={(e) => setDtFinal(e.target.value)} onClick={(e) => (e.target as any).showPicker?.()} />
             </div>
           </div>
         </div>
 
         <div style={{ paddingTop: "20px", borderTop: "1px solid #30363d", display: "flex", flexDirection: "column", gap: "8px" }}>
           
+          {/* BARRA DE PROGRESSO INTELIGENTE */}
           {progress > 0 && (
             <div style={{ width: "100%", height: "6px", backgroundColor: "#30363d", borderRadius: "3px", marginBottom: "4px", overflow: "hidden" }}>
-              <div style={{ width: `${progress}%`, height: "100%", backgroundColor: "#238636", transition: "width 1s linear" }}></div>
+              <div style={{ width: `${progress}%`, height: "100%", backgroundColor: "#238636", transition: "width 0.8s ease-in-out" }}></div>
             </div>
           )}
 
@@ -167,7 +161,7 @@ const Dashboard = () => {
             disabled={loading}
             style={{ padding: "12px", backgroundColor: "#1f6feb", color: "#fff", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: loading ? "not-allowed" : "pointer", fontSize: "13px" }}
           >
-            {loading && progress === 0 ? "Processando..." : "APLICAR FILTROS"}
+            {loading && progress === 0 ? "Gravando..." : "APLICAR FILTROS"}
           </button>
 
           <button 
@@ -175,11 +169,11 @@ const Dashboard = () => {
             disabled={loading}
             style={{ padding: "10px", backgroundColor: "transparent", color: "#58a6ff", border: "1px solid #30363d", borderRadius: "6px", fontWeight: "bold", cursor: loading ? "not-allowed" : "pointer", fontSize: "12px", marginTop: "4px" }}
           >
-            {loading && progress > 0 ? "Sincronizando..." : "🔄 Recarregar e Atualizar PBIX"}
+            {loading && progress > 0 ? "Sincronizando..." : "🔄 Sincronizar Agora (Real)"}
           </button>
 
           <p style={{ fontSize: "10px", color: "#8b949e", textAlign: "center", margin: "8px 0 0 0", fontStyle: "italic", lineHeight: "1.2" }}>
-            O processo de filtragem leva de 1 até no máximo 3 minutos.
+            Status monitorado em tempo real via API Microsoft.
           </p>
           
           {msg && <p style={{ fontSize: "12px", textAlign: "center", color: msg.includes("✅") ? "#3fb950" : "#f85149", margin: "10px 0 0 0" }}>{msg}</p>}
