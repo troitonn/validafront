@@ -10,7 +10,10 @@ const Dashboard = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [progress, setProgress] = useState(0);
 
+  // URLs
   const urlBI = "https://app.powerbi.com/reportEmbed?reportId=44029358-a74c-43ff-b041-0a01877077e3&autoAuth=true&ctid=7b8228c2-911b-4b3d-bca2-bb42add6ec41&actionBarEnabled=true";
+  
+  const urlAutomate = "https://default7b8228c2911b4b3dbca2bb42add6ec.41.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/2f97c85812e84355ae60b53d73ad420d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=SMOi--lPXC-jaAlz8m70s3iTgtHn4Bq01xwg-ihBb_s";
 
   const startProgress = () => {
     setProgress(0);
@@ -22,7 +25,7 @@ const Dashboard = () => {
         }
         return prev + 5;
       });
-    }, 1500); // Progresso mais suave
+    }, 200);
     return interval;
   };
 
@@ -55,12 +58,15 @@ const Dashboard = () => {
     const progressInterval = startProgress();
 
     try {
-      await fetch("https://default7b8228c2911b4b3dbca2bb42add6ec.41.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/2f97c85812e84355ae60b53d73ad420d/triggers/manual/paths/invoke?api-version=1", {
+      // Dispara o Power Automate via POST em segundo plano
+      await fetch(urlAutomate, {
         method: "POST",
-        mode: 'no-cors'
+        mode: 'no-cors',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}) // Envia corpo vazio para satisfazer o gatilho HTTP
       });
 
-      // Aguarda 3 segundos para garantir que o Power Automate iniciou o refresh
+      // Aguarda 3 segundos para o processamento antes de dar o refresh no iframe
       setTimeout(() => {
         clearInterval(progressInterval);
         setProgress(100);
@@ -78,7 +84,8 @@ const Dashboard = () => {
     }
   };
 
-  const dateInputStyle: React.CSSProperties = {
+  // Estilo padrão para inputs
+  const inputStyle: React.CSSProperties = {
     width: "100%",
     padding: "10px",
     borderRadius: "6px",
@@ -87,12 +94,13 @@ const Dashboard = () => {
     color: "#fff",
     fontSize: "12px",
     boxSizing: "border-box",
-    cursor: "pointer",
-    colorScheme: "dark" // Essencial para o ícone do calendário aparecer no fundo escuro
+    outline: "none",
+    colorScheme: "dark",
+    cursor: "pointer"
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh", width: "100vw", overflow: "hidden", backgroundColor: "#0d1117", fontFamily: "sans-serif" }}>
+    <div style={{ display: "flex", height: "100vh", width: "100vw", overflow: "hidden", backgroundColor: "#0d1117", fontFamily: "Segoe UI, Tahoma, Geneva, Verdana, sans-serif" }}>
       
       {/* SIDEBAR */}
       <aside style={{ 
@@ -105,7 +113,7 @@ const Dashboard = () => {
           <div>
             <label style={{ fontSize: "11px", color: "#8b949e", display: "block", marginBottom: "6px" }}>CNPJ / CPF</label>
             <input
-              style={{ ...dateInputStyle, cursor: "text" }}
+              style={{ ...inputStyle, cursor: "text" }}
               value={documento}
               onChange={(e) => setDocumento(e.target.value)}
               placeholder="00.000.000/0000-00"
@@ -114,11 +122,7 @@ const Dashboard = () => {
 
           <div>
             <label style={{ fontSize: "11px", color: "#8b949e", display: "block", marginBottom: "6px" }}>Tipo</label>
-            <select 
-              style={dateInputStyle}
-              value={tipo} 
-              onChange={(e) => setTipo(e.target.value as any)}
-            >
+            <select style={inputStyle} value={tipo} onChange={(e) => setTipo(e.target.value as any)}>
               <option value="cnpj">CNPJ</option>
               <option value="cpf">CPF</option>
             </select>
@@ -128,7 +132,7 @@ const Dashboard = () => {
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: "10px", color: "#8b949e", display: "block", marginBottom: "6px" }}>Data Inicial</label>
               <input 
-                style={dateInputStyle} 
+                style={inputStyle} 
                 type="date" 
                 value={dtInicial} 
                 onChange={(e) => setDtInicial(e.target.value)}
@@ -138,7 +142,7 @@ const Dashboard = () => {
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: "10px", color: "#8b949e", display: "block", marginBottom: "6px" }}>Data Final</label>
               <input 
-                style={dateInputStyle} 
+                style={inputStyle} 
                 type="date" 
                 value={dtFinal} 
                 onChange={(e) => setDtFinal(e.target.value)}
@@ -150,7 +154,7 @@ const Dashboard = () => {
 
         <div style={{ paddingTop: "20px", borderTop: "1px solid #30363d", display: "flex", flexDirection: "column", gap: "8px" }}>
           
-          {/* BARRA DE PROGRESSO VISUAL */}
+          {/* BARRA DE PROGRESSO */}
           {progress > 0 && (
             <div style={{ width: "100%", height: "4px", backgroundColor: "#30363d", borderRadius: "2px", marginBottom: "8px", overflow: "hidden" }}>
               <div style={{ width: `${progress}%`, height: "100%", backgroundColor: "#238636", transition: "width 0.4s linear" }}></div>
@@ -187,6 +191,7 @@ const Dashboard = () => {
           allowFullScreen={true}
         ></iframe>
       </main>
+
     </div>
   );
 };
