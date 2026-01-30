@@ -58,15 +58,13 @@ const Dashboard = () => {
     const progressInterval = startProgress();
 
     try {
-      // Dispara o Power Automate via POST em segundo plano
       await fetch(urlAutomate, {
         method: "POST",
         mode: 'no-cors',
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}) // Envia corpo vazio para satisfazer o gatilho HTTP
+        body: JSON.stringify({})
       });
 
-      // Aguarda 3 segundos para o processamento antes de dar o refresh no iframe
       setTimeout(() => {
         clearInterval(progressInterval);
         setProgress(100);
@@ -84,7 +82,6 @@ const Dashboard = () => {
     }
   };
 
-  // Estilo padrão para inputs
   const inputStyle: React.CSSProperties = {
     width: "100%",
     padding: "10px",
@@ -100,9 +97,8 @@ const Dashboard = () => {
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh", width: "100vw", overflow: "hidden", backgroundColor: "#0d1117", fontFamily: "Segoe UI, Tahoma, Geneva, Verdana, sans-serif" }}>
+    <div style={{ display: "flex", height: "100vh", width: "100vw", overflow: "hidden", backgroundColor: "#0d1117", fontFamily: "sans-serif" }}>
       
-      {/* SIDEBAR */}
       <aside style={{ 
         width: "280px", minWidth: "280px", height: "100%", backgroundColor: "#161b22", 
         borderRight: "1px solid #30363d", display: "flex", flexDirection: "column", padding: "20px", boxSizing: "border-box" 
@@ -154,7 +150,6 @@ const Dashboard = () => {
 
         <div style={{ paddingTop: "20px", borderTop: "1px solid #30363d", display: "flex", flexDirection: "column", gap: "8px" }}>
           
-          {/* BARRA DE PROGRESSO */}
           {progress > 0 && (
             <div style={{ width: "100%", height: "4px", backgroundColor: "#30363d", borderRadius: "2px", marginBottom: "8px", overflow: "hidden" }}>
               <div style={{ width: `${progress}%`, height: "100%", backgroundColor: "#238636", transition: "width 0.4s linear" }}></div>
@@ -176,12 +171,23 @@ const Dashboard = () => {
           >
             {loading && progress > 0 ? "Sincronizando..." : "🔄 Recarregar e Atualizar PBIX"}
           </button>
+
+          {/* OBSERVAÇÃO FIXA ADICIONADA AQUI */}
+          <p style={{ 
+            fontSize: "10px", 
+            color: "#8b949e", 
+            textAlign: "center", 
+            margin: "8px 0 0 0", 
+            fontStyle: "italic",
+            lineHeight: "1.2"
+          }}>
+            O processo de filtragem leva de 1 até no máximo 3 minutos.
+          </p>
           
-          {msg && <p style={{ fontSize: "12px", textAlign: "center", color: msg.includes("✅") ? "#3fb950" : "#f85149", margin: "10px 0 0 0", lineHeight: "1.4" }}>{msg}</p>}
+          {msg && <p style={{ fontSize: "12px", textAlign: "center", color: msg.includes("✅") ? "#3fb950" : "#f85149", margin: "10px 0 0 0" }}>{msg}</p>}
         </div>
       </aside>
 
-      {/* ÁREA DO RELATÓRIO */}
       <main style={{ flex: 1, height: "100%", backgroundColor: "#fff", display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <iframe
           key={refreshKey}
@@ -191,7 +197,6 @@ const Dashboard = () => {
           allowFullScreen={true}
         ></iframe>
       </main>
-
     </div>
   );
 };
