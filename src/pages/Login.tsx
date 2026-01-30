@@ -61,7 +61,7 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
         }}
       >
         <h2 style={{ color: "#1ad3a9", fontSize: "1.8rem", marginBottom: 20, fontWeight: 600 }}>
-          Hub DIMEG
+          Hub Somos a Unica
         </h2>
 
         {error && (
