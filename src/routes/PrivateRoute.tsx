@@ -1,8 +1,12 @@
 import { Navigate } from "react-router-dom";
-import { isAuthenticated } from "../auth/auth.ts"
+import { isAuthenticated } from "../auth/auth.ts";
 
-const PrivateRoute = ({ children }: { children: JSX.Element }) => {
-  return isAuthenticated() ? children : <Navigate to="/" />;
+interface PrivateRouteProps {
+  children: JSX.Element;
+}
+
+const PrivateRoute = ({ children }: PrivateRouteProps) => {
+  return isAuthenticated() ? children : <Navigate to="/" replace />;
 };
 
 export default PrivateRoute;
