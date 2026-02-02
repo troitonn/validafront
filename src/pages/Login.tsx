@@ -1,17 +1,20 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { loginFake } from "../auth/auth.ts";
 
-const Login = ({ onLogin }: { onLogin: () => void }) => {
+const Login = () => {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (user === "admin" && password === "123456") {
-      localStorage.setItem("auth", "true");
-      onLogin();
+    // Usando a lógica centralizada do auth.ts
+    if (loginFake(user, password)) {
+      navigate("/dashboard");
     } else {
       setError("Usuário ou senha inválidos");
     }
@@ -30,6 +33,7 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
         backgroundSize: "cover",
         backgroundPosition: "center",
         position: "relative",
+        overflow: "hidden"
       }}
     >
       {/* Overlay de blur */}
@@ -51,7 +55,7 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
           width: 350,
           padding: "40px 30px",
           borderRadius: 20,
-          backgroundColor: "rgba(255,255,255,0.05)", // vidro transparente
+          backgroundColor: "rgba(255,255,255,0.05)",
           boxShadow: "0 8px 32px rgba(0, 0, 0, 0.25)",
           backdropFilter: "blur(20px)",
           border: "1px solid rgba(255,255,255,0.15)",
@@ -60,7 +64,7 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
           alignItems: "center",
         }}
       >
-        <h2 style={{ color: "#1ad3a9", fontSize: "1.8rem", marginBottom: 20, fontWeight: 600 }}>
+        <h2 style={{ color: "#1ad3a9", fontSize: "1.8rem", marginBottom: 20, fontWeight: 600, textAlign: "center" }}>
           Hub Somos a Unica
         </h2>
 
@@ -76,17 +80,8 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
             placeholder="Usuário"
             value={user}
             onChange={(e) => setUser(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "12px 15px",
-              borderRadius: 12,
-              border: "1px solid rgba(255,255,255,0.25)",
-              backgroundColor: "rgba(255,255,255,0.1)",
-              color: "#fff",
-              fontSize: 14,
-              outline: "none",
-              boxSizing: "border-box",
-            }}
+            required
+            style={inputStyle}
           />
         </div>
 
@@ -96,17 +91,8 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
             placeholder="Senha"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "12px 45px 12px 15px",
-              borderRadius: 12,
-              border: "1px solid rgba(255,255,255,0.25)",
-              backgroundColor: "rgba(255,255,255,0.1)",
-              color: "#fff",
-              fontSize: 14,
-              outline: "none",
-              boxSizing: "border-box",
-            }}
+            required
+            style={inputStyle}
           />
           <button
             type="button"
@@ -120,6 +106,7 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
               border: "none",
               color: "#1ad3a9",
               cursor: "pointer",
+              fontSize: "1.2rem"
             }}
           >
             {showPassword ? "🙈" : "👁️"}
@@ -150,13 +137,26 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
             fontSize: 12,
             color: "rgba(255,255,255,0.7)",
             textAlign: "center",
+            lineHeight: "1.4"
           }}
         >
-          Sistema desenvolvido para otimização dos relatorios
+          Sistema desenvolvido para otimização dos relatórios
         </p>
       </form>
     </div>
   );
+};
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "12px 15px",
+  borderRadius: 12,
+  border: "1px solid rgba(255,255,255,0.25)",
+  backgroundColor: "rgba(255,255,255,0.1)",
+  color: "#fff",
+  fontSize: 14,
+  outline: "none",
+  boxSizing: "border-box",
 };
 
 export default Login;
