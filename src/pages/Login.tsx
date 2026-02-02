@@ -34,6 +34,22 @@ const Login = () => {
         overflow: "hidden"
       }}
     >
+      {/* CSS para esconder o ícone de senha nativo do navegador */}
+      <style>
+        {`
+          input::-ms-reveal,
+          input::-ms-clear,
+          input::-webkit-contacts-auto-fill-button,
+          input::-webkit-credentials-auto-fill-button {
+            display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            position: absolute !important;
+            right: 0 !important;
+          }
+        `}
+      </style>
+
       <div
         style={{
           position: "absolute",
@@ -86,17 +102,16 @@ const Login = () => {
         <div style={{ width: "100%", marginBottom: 20, position: "relative" }}>
           <input
             type={showPassword ? "text" : "password"}
+            name="field_access_token" // Nome genérico para despistar o navegador
+            id="field_access_token"
             placeholder="Senha"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            /* O atributo abaixo tenta impedir que o navegador 
-               coloque o ícone de gerenciador de senhas 
-            */
-            autoComplete="new-password" 
+            autoComplete="new-password"
             style={{
                ...inputStyle,
-               paddingRight: "45px" // Garante espaço para o ícone não bater no texto
+               paddingRight: "45px" 
             }}
           />
           <button
@@ -104,7 +119,7 @@ const Login = () => {
             onClick={() => setShowPassword(!showPassword)}
             style={{
               position: "absolute",
-              right: 15,
+              right: 12,
               top: "50%",
               transform: "translateY(-50%)",
               background: "none",
@@ -112,16 +127,14 @@ const Login = () => {
               color: "#1ad3a9",
               cursor: "pointer",
               fontSize: "1.2rem",
-              zIndex: 11,
+              zIndex: 20, // Z-index alto para ficar acima de qualquer ícone do navegador
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               padding: 0
             }}
           >
-            {/* Usando ícones de olho em vez de cadeados para evitar 
-               confusão visual com o ícone do navegador 
-            */}
+            {/* Mantendo apenas os seus cadeados originais */}
             {showPassword ? "🔓" : "🔒"}
           </button>
         </div>
