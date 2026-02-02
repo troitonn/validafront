@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // Adicionado
-import { loginFake, isAuthenticated } from "./auth/auth.ts";
+import Dashboard from "./pages/Dashboard.js"
+import { loginFake, isAuthenticated } from "./auth/auth.js"
 
 function App() {
   const navigate = useNavigate();
