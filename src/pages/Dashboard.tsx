@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { logout } from "../auth/auth.ts"; 
+import { logout } from "../auth/auth.ts";
 
 const Dashboard = () => {
   const [documento, setDocumento] = useState("");
@@ -11,10 +11,12 @@ const Dashboard = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [progress, setProgress] = useState(0);
 
+  // NOVO: Estado para armazenar o horário da última gravação de filtros
+  const [ultimaGravacao, setUltimaGravacao] = useState<string | null>(null);
+
   const urlBI = "https://app.powerbi.com/view?r=eyJrIjoiMGZhOGJiZGEtOGEyZi00ZDBjLWI5YmQtOTA4OGE5Y2QxNDgwIiwidCI6IjdiODIyOGMyLTkxMWItNGIzZC1iY2EyLWJiNDJhZGQ2ZWM0MSJ9&pageName=0dcf58f005625d83d821";
   const urlAutomate = "https://default7b8228c2911b4b3dbca2bb42add6ec.41.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/2f97c85812e84355ae60b53d73ad420d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=SMOi--lPXC-jaAlz8m70s3iTgtHn4Bq01xwg-ihBb_s";
 
-  // Função para limpar caracteres não numéricos em tempo real
   const handleDocumentChange = (val: string) => {
     const apenasNumeros = val.replace(/\D/g, "");
     setDocumento(apenasNumeros);
@@ -33,13 +35,24 @@ const Dashboard = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          documento: documento, // Já está limpo pelo handleDocumentChange
+          documento: documento,
           tipo,
-          dtinicial: dtInicial,
+          dtinitial: dtInicial,
           dtfinal: dtFinal,
         }),
       });
+
       if (!response.ok) throw new Error("Erro ao aplicar filtro");
+
+      // REGISTRA A HORA: Captura o momento exato do sucesso
+      const agora = new Date();
+      const horarioFormatado = agora.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      setUltimaGravacao(horarioFormatado);
+      
       setMsg("✅ Filtros aplicados!");
     } catch (err: any) {
       setMsg("❌ Erro: " + err.message);
@@ -132,6 +145,16 @@ const Dashboard = () => {
         </div>
 
         <div style={{ paddingTop: "20px", borderTop: "1px solid #30363d", display: "flex", flexDirection: "column", gap: "8px" }}>
+          
+          {/* EXIBIÇÃO DA ÚLTIMA GRAVAÇÃO NO PAINEL */}
+          {ultimaGravacao && (
+            <div style={{ padding: "8px", backgroundColor: "rgba(26, 211, 169, 0.1)", borderRadius: "6px", marginBottom: "8px", border: "1px solid rgba(26, 211, 169, 0.2)" }}>
+              <p style={{ fontSize: "11px", color: "#1ad3a9", margin: 0, textAlign: "center" }}>
+                Último envio: <strong>{ultimaGravacao}</strong>
+              </p>
+            </div>
+          )}
+
           {progress > 0 && (
             <div style={{ width: "100%", height: "6px", backgroundColor: "#30363d", borderRadius: "3px", marginBottom: "4px", overflow: "hidden" }}>
               <div style={{ width: `${progress}%`, height: "100%", backgroundColor: "#1ad3a9", transition: "width 0.1s linear" }}></div>
