@@ -109,7 +109,7 @@ const Login = () => {
               fontSize: "1.2rem"
             }}
           >
-            {showPassword ? "🙈" : "👁️"}
+            {showPassword ? "❌" : "👁️‍🗨️"}
           </button>
         </div>
 
