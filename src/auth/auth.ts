@@ -1,6 +1,4 @@
-// src/auth/auth.ts
-
-const AUTH_KEY = "auth_token"; // Nome único para a chave
+const AUTH_KEY = "auth_token";
 
 export const loginFake = (user: string, pass: string): boolean => {
   if (user === "admin" && pass === "123456") {
@@ -16,5 +14,5 @@ export const isAuthenticated = (): boolean => {
 
 export const logout = () => {
   localStorage.removeItem(AUTH_KEY);
-  window.location.href = "/"; // Força o redirecionamento
+  window.location.href = "/";
 };
