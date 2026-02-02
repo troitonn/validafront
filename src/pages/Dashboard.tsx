@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { logout } from "../auth/auth.ts"; // Importe a função de logout
+import { logout } from "../auth/auth.ts"; 
 
 const Dashboard = () => {
   const [documento, setDocumento] = useState("");
@@ -11,11 +11,21 @@ const Dashboard = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [progress, setProgress] = useState(0);
 
-  // URLs configuradas
   const urlBI = "https://app.powerbi.com/view?r=eyJrIjoiMGZhOGJiZGEtOGEyZi00ZDBjLWI5YmQtOTA4OGE5Y2QxNDgwIiwidCI6IjdiODIyOGMyLTkxMWItNGIzZC1iY2EyLWJiNDJhZGQ2ZWM0MSJ9&pageName=0dcf58f005625d83d821";
   const urlAutomate = "https://default7b8228c2911b4b3dbca2bb42add6ec.41.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/2f97c85812e84355ae60b53d73ad420d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=SMOi--lPXC-jaAlz8m70s3iTgtHn4Bq01xwg-ihBb_s";
 
+  // Função para limpar caracteres não numéricos em tempo real
+  const handleDocumentChange = (val: string) => {
+    const apenasNumeros = val.replace(/\D/g, "");
+    setDocumento(apenasNumeros);
+  };
+
   const aplicarFiltro = async () => {
+    if (!documento) {
+      setMsg("⚠️ Digite um CNPJ ou CPF");
+      return;
+    }
+
     setLoading(true);
     setMsg("");
     try {
@@ -23,7 +33,7 @@ const Dashboard = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          documento: documento.replace(/\D/g, ""),
+          documento: documento, // Já está limpo pelo handleDocumentChange
           tipo,
           dtinicial: dtInicial,
           dtfinal: dtFinal,
@@ -83,21 +93,24 @@ const Dashboard = () => {
     fontSize: "12px",
     boxSizing: "border-box",
     outline: "none",
-    colorScheme: "dark",
-    cursor: "pointer"
+    colorScheme: "dark"
   };
 
   return (
     <div style={{ display: "flex", height: "100vh", width: "100vw", overflow: "hidden", backgroundColor: "#0d1117", fontFamily: "sans-serif" }}>
       
-      {/* SIDEBAR */}
       <aside style={{ width: "280px", minWidth: "280px", height: "100%", backgroundColor: "#161b22", borderRight: "1px solid #30363d", display: "flex", flexDirection: "column", padding: "20px", boxSizing: "border-box" }}>
         <h2 style={{ fontSize: "1.2rem", color: "#1ad3a9", margin: "0 0 25px 0", fontWeight: "600" }}>Filtros do BI</h2>
         
         <div style={{ display: "flex", flexDirection: "column", gap: "15px", flex: 1 }}>
           <div>
-            <label style={{ fontSize: "11px", color: "#8b949e", display: "block", marginBottom: "6px" }}>CNPJ / CPF</label>
-            <input style={{ ...inputStyle, cursor: "text" }} value={documento} onChange={(e) => setDocumento(e.target.value)} placeholder="00.000.000/0000-00" />
+            <label style={{ fontSize: "11px", color: "#8b949e", display: "block", marginBottom: "6px" }}>CNPJ / CPF (Apenas números)</label>
+            <input 
+              style={{ ...inputStyle, cursor: "text" }} 
+              value={documento} 
+              onChange={(e) => handleDocumentChange(e.target.value)} 
+              placeholder="Ex: 00000000000000" 
+            />
           </div>
           <div>
             <label style={{ fontSize: "11px", color: "#8b949e", display: "block", marginBottom: "6px" }}>Tipo</label>
@@ -130,10 +143,9 @@ const Dashboard = () => {
           </button>
 
           <button onClick={atualizarEPowerAutomate} disabled={loading} style={{ padding: "10px", backgroundColor: "transparent", color: "#1ad3a9", border: "1px solid #30363d", borderRadius: "6px", fontWeight: "bold", cursor: loading ? "not-allowed" : "pointer", fontSize: "12px", marginTop: "4px" }}>
-            {loading && progress > 0 ? "Sincronizando..." : "🔄 Sincronizar Agora (Real)"}
+            {loading && progress > 0 ? "Sincronizando..." : "🔄 Sincronizar Agora"}
           </button>
 
-          {/* BOTÃO DE LOGOUT ADICIONADO AQUI */}
           <button 
             onClick={logout} 
             style={{ 
@@ -148,7 +160,7 @@ const Dashboard = () => {
               marginTop: "10px" 
             }}
           >
-            Botão de Desligar
+            Sair do Sistema
           </button>
 
           <p style={{ fontSize: "10px", color: "#8b949e", textAlign: "center", margin: "8px 0 0 0", fontStyle: "italic", lineHeight: "1.2" }}>
