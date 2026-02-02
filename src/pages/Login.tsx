@@ -11,8 +11,6 @@ const Login = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Usando a lógica centralizada do auth.ts
     if (loginFake(user, password)) {
       navigate("/dashboard");
     } else {
@@ -36,7 +34,6 @@ const Login = () => {
         overflow: "hidden"
       }}
     >
-      {/* Overlay de blur */}
       <div
         style={{
           position: "absolute",
@@ -49,6 +46,7 @@ const Login = () => {
 
       <form
         onSubmit={handleSubmit}
+        autoComplete="off"
         style={{
           position: "relative",
           zIndex: 10,
@@ -92,24 +90,39 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            style={inputStyle}
+            /* O atributo abaixo tenta impedir que o navegador 
+               coloque o ícone de gerenciador de senhas 
+            */
+            autoComplete="new-password" 
+            style={{
+               ...inputStyle,
+               paddingRight: "45px" // Garante espaço para o ícone não bater no texto
+            }}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             style={{
               position: "absolute",
-              right: 12,
+              right: 15,
               top: "50%",
               transform: "translateY(-50%)",
               background: "none",
               border: "none",
               color: "#1ad3a9",
               cursor: "pointer",
-              fontSize: "1.2rem"
+              fontSize: "1.2rem",
+              zIndex: 11,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 0
             }}
           >
-            {showPassword ? "🔓" : "🔒"}
+            {/* Usando ícones de olho em vez de cadeados para evitar 
+               confusão visual com o ícone do navegador 
+            */}
+            {showPassword ? "👁️" : "🙈"}
           </button>
         </div>
 
