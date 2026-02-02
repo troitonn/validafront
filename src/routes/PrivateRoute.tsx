@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { isAuthenticated } from "../auth/auth.js"
+import { isAuthenticated } from "../auth/auth.ts";
 
 interface PrivateRouteProps {
   children: JSX.Element;
