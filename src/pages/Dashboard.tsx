@@ -183,7 +183,7 @@ const Dashboard = () => {
               marginTop: "10px" 
             }}
           >
-            Sair do Sistema
+            Desligar
           </button>
 
           <p style={{ fontSize: "10px", color: "#8b949e", textAlign: "center", margin: "8px 0 0 0", fontStyle: "italic", lineHeight: "1.2" }}>
