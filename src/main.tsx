@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom' // Adicionado
 import './index.css'
 import App from './App.tsx'
 import Dashboard from './pages/Dashboard.tsx'
-import PrivateRoute from './components/PrivateRoute.tsx'
+import PrivateRoute from './components/PrivateRoute'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
