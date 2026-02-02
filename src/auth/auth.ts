@@ -1,15 +1,20 @@
-export const loginFake = (user: string, pass: string) => {
+// src/auth/auth.ts
+
+const AUTH_KEY = "auth_token"; // Nome único para a chave
+
+export const loginFake = (user: string, pass: string): boolean => {
   if (user === "admin" && pass === "123456") {
-    localStorage.setItem("auth", "true");
+    localStorage.setItem(AUTH_KEY, "true");
     return true;
   }
   return false;
 };
 
-export const isAuthenticated = () => {
-  return localStorage.getItem("auth") === "true";
+export const isAuthenticated = (): boolean => {
+  return localStorage.getItem(AUTH_KEY) === "true";
 };
 
 export const logout = () => {
-  localStorage.removeItem("auth");
+  localStorage.removeItem(AUTH_KEY);
+  window.location.href = "/"; // Força o redirecionamento
 };
