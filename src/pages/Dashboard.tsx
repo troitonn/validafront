@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { logout } from "../auth/auth.ts"; // Importe a função de logout
 
 const Dashboard = () => {
   const [documento, setDocumento] = useState("");
@@ -43,14 +44,11 @@ const Dashboard = () => {
     setProgress(0);
 
     try {
-      // Dispara o Power Automate
       await fetch(urlAutomate, { method: "POST", mode: "no-cors" });
-
       setMsg("⏳ Sincronizando Power BI em 90s...");
 
-      // Barra de progresso de 90 segundos (1,5min)
-      const totalTime = 90000; // 90 segundos em ms
-      const intervalTime = 100; // atualiza a cada 100ms
+      const totalTime = 90000;
+      const intervalTime = 100;
       const increment = (intervalTime / totalTime) * 100;
 
       const interval = setInterval(() => {
@@ -95,6 +93,7 @@ const Dashboard = () => {
       {/* SIDEBAR */}
       <aside style={{ width: "280px", minWidth: "280px", height: "100%", backgroundColor: "#161b22", borderRight: "1px solid #30363d", display: "flex", flexDirection: "column", padding: "20px", boxSizing: "border-box" }}>
         <h2 style={{ fontSize: "1.2rem", color: "#1ad3a9", margin: "0 0 25px 0", fontWeight: "600" }}>Filtros do BI</h2>
+        
         <div style={{ display: "flex", flexDirection: "column", gap: "15px", flex: 1 }}>
           <div>
             <label style={{ fontSize: "11px", color: "#8b949e", display: "block", marginBottom: "6px" }}>CNPJ / CPF</label>
@@ -132,6 +131,24 @@ const Dashboard = () => {
 
           <button onClick={atualizarEPowerAutomate} disabled={loading} style={{ padding: "10px", backgroundColor: "transparent", color: "#1ad3a9", border: "1px solid #30363d", borderRadius: "6px", fontWeight: "bold", cursor: loading ? "not-allowed" : "pointer", fontSize: "12px", marginTop: "4px" }}>
             {loading && progress > 0 ? "Sincronizando..." : "🔄 Sincronizar Agora (Real)"}
+          </button>
+
+          {/* BOTÃO DE LOGOUT ADICIONADO AQUI */}
+          <button 
+            onClick={logout} 
+            style={{ 
+              padding: "10px", 
+              backgroundColor: "transparent", 
+              color: "#f85149", 
+              border: "1px solid rgba(248, 81, 73, 0.3)", 
+              borderRadius: "6px", 
+              fontWeight: "bold", 
+              cursor: "pointer", 
+              fontSize: "12px", 
+              marginTop: "10px" 
+            }}
+          >
+            Sair do Sistema
           </button>
 
           <p style={{ fontSize: "10px", color: "#8b949e", textAlign: "center", margin: "8px 0 0 0", fontStyle: "italic", lineHeight: "1.2" }}>
