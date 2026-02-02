@@ -8,7 +8,6 @@ function App() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  // Se já estiver logado, redireciona automaticamente para o Dashboard
   useEffect(() => {
     if (isAuthenticated()) {
       navigate("/dashboard");
@@ -17,11 +16,8 @@ function App() {
 
   function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    
-    // Tenta realizar o login usando a lógica do auth.ts
     if (loginFake(user, password)) {
-      setError("");
-      navigate("/dashboard"); 
+      navigate("/dashboard");
     } else {
       setError("Usuário ou senha inválidos");
     }
@@ -30,7 +26,10 @@ function App() {
   return (
     <div style={styles.container}>
       <form onSubmit={handleLogin} style={styles.card}>
-        <h2 style={{ textAlign: "center", marginBottom: "10px" }}>🔐 Login</h2>
+        <div style={styles.header}>
+          <span style={{ fontSize: "30px" }}>🔐</span>
+          <h2 style={{ margin: 0, fontSize: "28px" }}>Login</h2>
+        </div>
 
         <input
           placeholder="Usuário"
@@ -62,29 +61,39 @@ function App() {
 const styles = {
   container: {
     height: "100vh",
+    width: "100vw",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    background: "#0f172a", // Azul escuro do fundo
+    background: "#0d1117",
     fontFamily: "sans-serif",
   },
   card: {
-    background: "#020617", // Card quase preto
-    padding: "30px",
-    borderRadius: "12px",
-    width: "320px",
+    background: "#010409",
+    padding: "40px 30px",
+    borderRadius: "8px",
+    width: "350px",
     color: "#fff",
     display: "flex" as const,
     flexDirection: "column" as const,
+    gap: "20px",
+    boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+    border: "1px solid #30363d"
+  },
+  header: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
     gap: "15px",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.5)",
+    marginBottom: "10px"
   },
   input: {
-    padding: "12px",
+    padding: "12px 15px",
     borderRadius: "6px",
-    border: "1px solid #334155",
-    background: "#1e293b",
+    border: "1px solid #30363d",
+    background: "#161b22",
     color: "#fff",
+    fontSize: "16px",
     outline: "none",
   },
   button: {
@@ -92,16 +101,17 @@ const styles = {
     borderRadius: "6px",
     border: "none",
     cursor: "pointer",
-    background: "#2563eb", // Azul royal do botão
+    background: "#2563eb",
     color: "#fff",
     fontWeight: "bold" as const,
-    marginTop: "10px",
+    fontSize: "16px",
+    transition: "background 0.2s",
   },
   error: {
-    color: "#f87171",
+    color: "#f85149",
     fontSize: "14px",
     textAlign: "center" as const,
-    margin: "0",
+    margin: 0,
   },
 };
 
