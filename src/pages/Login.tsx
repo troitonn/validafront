@@ -122,7 +122,7 @@ const Login = () => {
             {/* Usando ícones de olho em vez de cadeados para evitar 
                confusão visual com o ícone do navegador 
             */}
-            {showPassword ? "👁️" : "🙈"}
+            {showPassword ? "🔓" : "🔒"}
           </button>
         </div>
 
