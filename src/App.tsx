@@ -1,26 +1,29 @@
-import { useState } from "react";
-import Dashboard from "./pages/Dashboard.tsx";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // Adicionado
 import { loginFake, isAuthenticated } from "./auth/auth.ts";
 
 function App() {
-  const [logged, setLogged] = useState(isAuthenticated());
+  const navigate = useNavigate();
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  // Se já estiver logado e tentar acessar a "/" (Login), manda direto pro Dash
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
 
   function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     
     if (loginFake(user, password)) {
-      setLogged(true);
       setError("");
+      navigate("/dashboard"); // Redireciona via URL
     } else {
       setError("Usuário ou senha inválidos");
     }
-  }
-
-  if (logged) {
-    return <Dashboard />;
   }
 
   return (
@@ -55,6 +58,7 @@ function App() {
   );
 }
 
+// ... (seus estilos permanecem os mesmos abaixo)
 const styles = {
   container: {
     height: "100vh",
