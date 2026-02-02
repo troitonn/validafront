@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Adicionado
-import Dashboard from "./pages/Dashboard.js"
-import { loginFake, isAuthenticated } from "./auth/auth.js"
+import { useNavigate } from "react-router-dom";
+import { loginFake, isAuthenticated } from "./auth/auth.ts";
 
 function App() {
   const navigate = useNavigate();
@@ -9,7 +8,7 @@ function App() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  // Se já estiver logado e tentar acessar a "/" (Login), manda direto pro Dash
+  // Se já estiver logado, redireciona automaticamente para o Dashboard
   useEffect(() => {
     if (isAuthenticated()) {
       navigate("/dashboard");
@@ -19,9 +18,10 @@ function App() {
   function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     
+    // Tenta realizar o login usando a lógica do auth.ts
     if (loginFake(user, password)) {
       setError("");
-      navigate("/dashboard"); // Redireciona via URL
+      navigate("/dashboard"); 
     } else {
       setError("Usuário ou senha inválidos");
     }
@@ -59,18 +59,17 @@ function App() {
   );
 }
 
-// ... (seus estilos permanecem os mesmos abaixo)
 const styles = {
   container: {
     height: "100vh",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    background: "#0f172a",
+    background: "#0f172a", // Azul escuro do fundo
     fontFamily: "sans-serif",
   },
   card: {
-    background: "#020617",
+    background: "#020617", // Card quase preto
     padding: "30px",
     borderRadius: "12px",
     width: "320px",
@@ -93,7 +92,7 @@ const styles = {
     borderRadius: "6px",
     border: "none",
     cursor: "pointer",
-    background: "#2563eb",
+    background: "#2563eb", // Azul royal do botão
     color: "#fff",
     fontWeight: "bold" as const,
     marginTop: "10px",
