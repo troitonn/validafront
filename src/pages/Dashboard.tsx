@@ -13,7 +13,7 @@ const Dashboard = () => {
   const [ultimaGravacao, setUltimaGravacao] = useState<string | null>(null);
 
   const urlBI = "https://app.powerbi.com/view?r=eyJrIjoiOGYzNDIzYmUtNTU5NC00ODU4LWE0Y2UtMWM1NTIzMWRlNGRhIiwidCI6IjdiODIyOGMyLTkxMWItNGIzZC1iY2EyLWJiNDJhZGQ2ZWM0MSJ9";
-  const urlAutomate = "https://default7b8228c2911b4b3dbca2bb42add6ec.41.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/2f97c85812e84355ae60b53d73ad420d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=SMOi--lPXC-jaAlz8m70s3iTgtHn4Bq01xwg-ihBb_s";
+  const urlAutomate = "https://default7b8228c2-911b-4b3d-bca2-bb42add6ec41.41.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/2f97c85812e84355ae60b53d73ad420d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=SMOi--lPXC-jaAlz8m70s3iTgtHn4Bq01xwg-ihBb_s";
   const urlProxyStatus = "https://valida-proxy.onrender.com/status-atualizacao";
 
   const handleDocumentChange = (val: string) => {
@@ -21,16 +21,19 @@ const Dashboard = () => {
     setDocumento(apenasNumeros);
   };
 
-  const aplicarFiltro = async () => {
+  const handleSincronizarDados = async () => {
     if (!documento) {
       setMsg("⚠️ Digite um CNPJ ou CPF");
       return;
     }
 
     setLoading(true);
-    setMsg("");
+    setMsg("⏳ Enviando filtros...");
+    setProgress(15);
+
     try {
-      const response = await fetch("https://valida-proxy.onrender.com/filtro", {
+      // 1. Envia os filtros para o Proxy (O Power BI consumirá via GET depois)
+      const resFiltro = await fetch("https://valida-proxy.onrender.com/filtro", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -41,30 +44,22 @@ const Dashboard = () => {
         }),
       });
 
-      if (!response.ok) throw new Error("Erro ao aplicar filtro");
+      if (!resFiltro.ok) throw new Error("Erro ao enviar filtros");
 
-      const agora = new Date();
-      setUltimaGravacao(agora.toLocaleTimeString("pt-BR"));
-      setMsg("✅ Filtros aplicados!");
-    } catch (err: any) {
-      setMsg("❌ Erro: " + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+      setProgress(40);
+      setMsg("🚀 Disparando Power Automate...");
 
-  // FUNÇÃO ATUALIZADA: Monitoramento Real em vez de timer fixo
-  const atualizarEPowerAutomate = async () => {
-    setLoading(true);
-    setMsg("⏳ Iniciando Power Automate...");
-    setProgress(5);
+      // 2. Dispara o Power Automate para iniciar o Refresh no Power BI
+      await fetch(urlAutomate, { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ solicitante: "Dashboard" })
+      });
 
-    try {
-      // 1. Dispara o Power Automate
-      await fetch(urlAutomate, { method: "POST", mode: "no-cors" });
-      setMsg("⏳ Sincronizando dados reais...");
+      setProgress(60);
+      setMsg("🔄 Sincronizando dados no Power BI...");
 
-      // 2. Loop de verificação (Polling)
+      // 3. Polling de status para monitorar a conclusão
       const checkStatus = setInterval(async () => {
         try {
           const res = await fetch(urlProxyStatus);
@@ -73,26 +68,27 @@ const Dashboard = () => {
           if (data.status === "Completed") {
             clearInterval(checkStatus);
             setProgress(100);
-            setRefreshKey(prevKey => prevKey + 1);
             setMsg("✅ Power BI atualizado!");
+            setUltimaGravacao(new Date().toLocaleTimeString("pt-BR"));
+            setRefreshKey(prev => prev + 1); // Recarrega o Iframe
             setLoading(false);
-            setTimeout(() => setProgress(0), 3000);
+            setTimeout(() => setProgress(0), 4000);
           } else if (data.status === "Failed") {
             clearInterval(checkStatus);
-            setMsg("⚠️ O Power BI relatou erro.");
+            setMsg("❌ Falha na atualização do BI.");
             setLoading(false);
             setProgress(0);
           } else {
-            // Move a barra gradualmente enquanto espera
-            setProgress(prev => (prev < 95 ? prev + 2 : prev));
+            // Avanço cosmético enquanto aguarda o servidor
+            setProgress(prev => (prev < 95 ? prev + 1 : prev));
           }
         } catch (e) {
-          console.error("Erro ao consultar status");
+          console.error("Erro ao verificar status");
         }
-      }, 10000); // Consulta a cada 10 segundos
+      }, 8000); // Verifica a cada 8 segundos
 
-    } catch (err) {
-      setMsg("⚠️ Falha ao conectar com o serviço.");
+    } catch (err: any) {
+      setMsg("❌ Erro: " + err.message);
       setLoading(false);
       setProgress(0);
     }
@@ -119,12 +115,12 @@ const Dashboard = () => {
         
         <div style={{ display: "flex", flexDirection: "column", gap: "15px", flex: 1 }}>
           <div>
-            <label style={{ fontSize: "11px", color: "#8b949e", display: "block", marginBottom: "6px" }}>CNPJ / CPF (Apenas números)</label>
+            <label style={{ fontSize: "11px", color: "#8b949e", display: "block", marginBottom: "6px" }}>CNPJ / CPF</label>
             <input 
-              style={{ ...inputStyle, cursor: "text" }} 
+              style={inputStyle} 
               value={documento} 
               onChange={(e) => handleDocumentChange(e.target.value)} 
-              placeholder="Ex: 00000000000000" 
+              placeholder="Ex: 33429648000137" 
             />
           </div>
           <div>
@@ -148,27 +144,34 @@ const Dashboard = () => {
 
         <div style={{ paddingTop: "20px", borderTop: "1px solid #30363d", display: "flex", flexDirection: "column", gap: "8px" }}>
           
-          {ultimaGravacao && (
-            <div style={{ padding: "8px", backgroundColor: "rgba(26, 211, 169, 0.1)", borderRadius: "6px", marginBottom: "8px", border: "1px solid rgba(26, 211, 169, 0.2)" }}>
-              <p style={{ fontSize: "11px", color: "#1ad3a9", margin: 0, textAlign: "center" }}>
-                Último envio: <strong>{ultimaGravacao}</strong>
-              </p>
-            </div>
-          )}
-
           {progress > 0 && (
             <div style={{ width: "100%", height: "6px", backgroundColor: "#30363d", borderRadius: "3px", marginBottom: "4px", overflow: "hidden" }}>
-              <div style={{ width: `${progress}%`, height: "100%", backgroundColor: "#1ad3a9", transition: "width 0.5s linear" }}></div>
+              <div style={{ width: `${progress}%`, height: "100%", backgroundColor: "#1ad3a9", transition: "width 0.4s ease-out" }}></div>
             </div>
           )}
 
-          <button onClick={aplicarFiltro} disabled={loading} style={{ padding: "12px", backgroundColor: "#1ad3a9", color: "#01222e", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: loading ? "not-allowed" : "pointer", fontSize: "13px" }}>
-            {loading && progress === 0 ? "Gravando..." : "APLICAR FILTROS"}
+          <button 
+            onClick={handleSincronizarDados} 
+            disabled={loading} 
+            style={{ 
+              padding: "14px", 
+              backgroundColor: "#1ad3a9", 
+              color: "#01222e", 
+              border: "none", 
+              borderRadius: "6px", 
+              fontWeight: "bold", 
+              cursor: loading ? "not-allowed" : "pointer", 
+              fontSize: "13px" 
+            }}
+          >
+            {loading ? "SINCRONIZANDO..." : "SINCRONIZAR DADOS"}
           </button>
 
-          <button onClick={atualizarEPowerAutomate} disabled={loading} style={{ padding: "10px", backgroundColor: "transparent", color: "#1ad3a9", border: "1px solid #30363d", borderRadius: "6px", fontWeight: "bold", cursor: loading ? "not-allowed" : "pointer", fontSize: "12px", marginTop: "4px" }}>
-            {loading && progress > 0 ? "Sincronizando..." : "🔄 Sincronizar Agora"}
-          </button>
+          {ultimaGravacao && (
+            <p style={{ fontSize: "10px", color: "#1ad3a9", textAlign: "center", margin: "5px 0" }}>
+              Sincronizado em: {ultimaGravacao}
+            </p>
+          )}
 
           <button 
             onClick={logout} 
@@ -187,10 +190,6 @@ const Dashboard = () => {
             Sair do Sistema
           </button>
 
-          <p style={{ fontSize: "10px", color: "#8b949e", textAlign: "center", margin: "8px 0 0 0", fontStyle: "italic", lineHeight: "1.2" }}>
-            Status monitorado via API Microsoft.
-          </p>
-          
           {msg && <p style={{ fontSize: "12px", textAlign: "center", color: msg.includes("✅") ? "#3fb950" : "#f85149", margin: "10px 0 0 0" }}>{msg}</p>}
         </div>
       </aside>
