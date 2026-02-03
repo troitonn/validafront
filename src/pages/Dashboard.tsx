@@ -10,8 +10,6 @@ const Dashboard = () => {
   const [msg, setMsg] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const [progress, setProgress] = useState(0);
-
-  // NOVO: Estado para armazenar o horário da última gravação de filtros
   const [ultimaGravacao, setUltimaGravacao] = useState<string | null>(null);
 
   const urlBI = "https://app.powerbi.com/view?r=eyJrIjoiMGZhOGJiZGEtOGEyZi00ZDBjLWI5YmQtOTA4OGE5Y2QxNDgwIiwidCI6IjdiODIyOGMyLTkxMWItNGIzZC1iY2EyLWJiNDJhZGQ2ZWM0MSJ9&pageName=0dcf58f005625d83d821";
@@ -31,28 +29,22 @@ const Dashboard = () => {
     setLoading(true);
     setMsg("");
     try {
+      // O segredo está aqui: mapear dtInicial para dtinicial (minúsculo)
       const response = await fetch("https://valida-proxy.onrender.com/filtro", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           documento: documento,
-          tipo,
-          dtinitial: dtInicial,
-          dtfinal: dtFinal,
+          tipo: tipo,
+          dtinicial: dtInicial || "", // Envia string vazia se não houver data selecionada
+          dtfinal: dtFinal || "",
         }),
       });
 
       if (!response.ok) throw new Error("Erro ao aplicar filtro");
 
-      // REGISTRA A HORA: Captura o momento exato do sucesso
       const agora = new Date();
-      const horarioFormatado = agora.toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      });
-      setUltimaGravacao(horarioFormatado);
-      
+      setUltimaGravacao(agora.toLocaleTimeString("pt-BR"));
       setMsg("✅ Filtros aplicados!");
     } catch (err: any) {
       setMsg("❌ Erro: " + err.message);
@@ -146,7 +138,6 @@ const Dashboard = () => {
 
         <div style={{ paddingTop: "20px", borderTop: "1px solid #30363d", display: "flex", flexDirection: "column", gap: "8px" }}>
           
-          {/* EXIBIÇÃO DA ÚLTIMA GRAVAÇÃO NO PAINEL */}
           {ultimaGravacao && (
             <div style={{ padding: "8px", backgroundColor: "rgba(26, 211, 169, 0.1)", borderRadius: "6px", marginBottom: "8px", border: "1px solid rgba(26, 211, 169, 0.2)" }}>
               <p style={{ fontSize: "11px", color: "#1ad3a9", margin: 0, textAlign: "center" }}>
@@ -183,7 +174,7 @@ const Dashboard = () => {
               marginTop: "10px" 
             }}
           >
-            Desligar
+            Sair do Sistema
           </button>
 
           <p style={{ fontSize: "10px", color: "#8b949e", textAlign: "center", margin: "8px 0 0 0", fontStyle: "italic", lineHeight: "1.2" }}>
