@@ -14,6 +14,7 @@ const Dashboard = () => {
 
   const urlBI = "https://app.powerbi.com/view?r=eyJrIjoiMGZhOGJiZGEtOGEyZi00ZDBjLWI5YmQtOTA4OGE5Y2QxNDgwIiwidCI6IjdiODIyOGMyLTkxMWItNGIzZC1iY2EyLWJiNDJhZGQ2ZWM0MSJ9&pageName=0dcf58f005625d83d821";
   const urlAutomate = "https://default7b8228c2911b4b3dbca2bb42add6ec.41.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/2f97c85812e84355ae60b53d73ad420d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=SMOi--lPXC-jaAlz8m70s3iTgtHn4Bq01xwg-ihBb_s";
+  const urlProxyStatus = "https://valida-proxy.onrender.com/status-atualizacao";
 
   const handleDocumentChange = (val: string) => {
     const apenasNumeros = val.replace(/\D/g, "");
@@ -29,14 +30,13 @@ const Dashboard = () => {
     setLoading(true);
     setMsg("");
     try {
-      // O segredo está aqui: mapear dtInicial para dtinicial (minúsculo)
       const response = await fetch("https://valida-proxy.onrender.com/filtro", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           documento: documento,
           tipo: tipo,
-          dtinicial: dtInicial || "", // Envia string vazia se não houver data selecionada
+          dtinicial: dtInicial || "",
           dtfinal: dtFinal || "",
         }),
       });
@@ -53,33 +53,43 @@ const Dashboard = () => {
     }
   };
 
+  // FUNÇÃO ATUALIZADA: Monitoramento Real em vez de timer fixo
   const atualizarEPowerAutomate = async () => {
     setLoading(true);
     setMsg("⏳ Iniciando Power Automate...");
-    setProgress(0);
+    setProgress(5);
 
     try {
+      // 1. Dispara o Power Automate
       await fetch(urlAutomate, { method: "POST", mode: "no-cors" });
-      setMsg("⏳ Sincronizando Power BI em 90s...");
+      setMsg("⏳ Sincronizando dados reais...");
 
-      const totalTime = 90000;
-      const intervalTime = 100;
-      const increment = (intervalTime / totalTime) * 100;
+      // 2. Loop de verificação (Polling)
+      const checkStatus = setInterval(async () => {
+        try {
+          const res = await fetch(urlProxyStatus);
+          const data = await res.json();
 
-      const interval = setInterval(() => {
-        setProgress(prev => {
-          if (prev + increment >= 100) {
-            clearInterval(interval);
+          if (data.status === "Completed") {
+            clearInterval(checkStatus);
             setProgress(100);
             setRefreshKey(prevKey => prevKey + 1);
             setMsg("✅ Power BI atualizado!");
             setLoading(false);
-            setTimeout(() => setProgress(0), 2000);
-            return 100;
+            setTimeout(() => setProgress(0), 3000);
+          } else if (data.status === "Failed") {
+            clearInterval(checkStatus);
+            setMsg("⚠️ O Power BI relatou erro.");
+            setLoading(false);
+            setProgress(0);
+          } else {
+            // Move a barra gradualmente enquanto espera
+            setProgress(prev => (prev < 95 ? prev + 2 : prev));
           }
-          return prev + increment;
-        });
-      }, intervalTime);
+        } catch (e) {
+          console.error("Erro ao consultar status");
+        }
+      }, 10000); // Consulta a cada 10 segundos
 
     } catch (err) {
       setMsg("⚠️ Falha ao conectar com o serviço.");
@@ -148,7 +158,7 @@ const Dashboard = () => {
 
           {progress > 0 && (
             <div style={{ width: "100%", height: "6px", backgroundColor: "#30363d", borderRadius: "3px", marginBottom: "4px", overflow: "hidden" }}>
-              <div style={{ width: `${progress}%`, height: "100%", backgroundColor: "#1ad3a9", transition: "width 0.1s linear" }}></div>
+              <div style={{ width: `${progress}%`, height: "100%", backgroundColor: "#1ad3a9", transition: "width 0.5s linear" }}></div>
             </div>
           )}
 
@@ -178,7 +188,7 @@ const Dashboard = () => {
           </button>
 
           <p style={{ fontSize: "10px", color: "#8b949e", textAlign: "center", margin: "8px 0 0 0", fontStyle: "italic", lineHeight: "1.2" }}>
-            Barra de progresso de 90 segundos
+            Status monitorado via API Microsoft.
           </p>
           
           {msg && <p style={{ fontSize: "12px", textAlign: "center", color: msg.includes("✅") ? "#3fb950" : "#f85149", margin: "10px 0 0 0" }}>{msg}</p>}
