@@ -12,7 +12,7 @@ const Dashboard = () => {
   const [progress, setProgress] = useState(0);
   const [ultimaGravacao, setUltimaGravacao] = useState<string | null>(null);
 
-  const urlBI = "https://app.powerbi.com/view?r=eyJrIjoiMGZhOGJiZGEtOGEyZi00ZDBjLWI5YmQtOTA4OGE5Y2QxNDgwIiwidCI6IjdiODIyOGMyLTkxMWItNGIzZC1iY2EyLWJiNDJhZGQ2ZWM0MSJ9&pageName=0dcf58f005625d83d821";
+  const urlBI = "https://app.powerbi.com/view?r=eyJrIjoiOGYzNDIzYmUtNTU5NC00ODU4LWE0Y2UtMWM1NTIzMWRlNGRhIiwidCI6IjdiODIyOGMyLTkxMWItNGIzZC1iY2EyLWJiNDJhZGQ2ZWM0MSJ9";
   const urlAutomate = "https://default7b8228c2911b4b3dbca2bb42add6ec.41.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/2f97c85812e84355ae60b53d73ad420d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=SMOi--lPXC-jaAlz8m70s3iTgtHn4Bq01xwg-ihBb_s";
   const urlProxyStatus = "https://valida-proxy.onrender.com/status-atualizacao";
 
